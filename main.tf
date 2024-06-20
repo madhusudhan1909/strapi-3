@@ -4,13 +4,16 @@ provider "aws" {
 
 # Define the existing instance
 resource "aws_instance" "existing_instance" {
-  instance_id = "i-02c15d7aaf5647f08"  // Replace with your actual instance ID
+  filter {
+    name   = "tag:Name"
+    values = ["srv-strapi"]  // Replace with your instance name tag
+  }
 
   connection {
     type        = "ssh"
     user        = "ubuntu"  // Replace with your SSH user on the instance
-    private_key = file("home/ubuntu")  // Replace with the path to your private key
-    host        = "13.213.36.79"  // Use the instance's public IP address
+    private_key = file("/path/to/your/private_key.pem")  // Replace with the path to your private key
+    host        = aws_instance.existing_instance.public_ip  // Use the instance's public IP address
   }
 
   provisioner "remote-exec" {
@@ -26,9 +29,11 @@ resource "aws_instance" "existing_instance" {
     ]
   }
 
-  // Specify any other required configurations like tags if necessary
+  // Specify any other required configurations like instance type, tags, etc.
+  instance_type = "t2.micro"  // Replace with your instance type if different
+
   tags = {
-    Name = "ExistingInstance"
+    Name = "srv-strapi"
   }
 }
 
