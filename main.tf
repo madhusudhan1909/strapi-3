@@ -1,15 +1,15 @@
 provider "aws" {
-  region = "ap-southeast-1"  // Specify your AWS region
+  region = "ap-southeast-1"
 }
 
 # Define the EC2 instance
 resource "aws_instance" "strapi_instance" {
-  ami             = "ami-003c463c8207b4dfa"  // Ubuntu 24.04 AMI ID
-  instance_type   = "t2.medium"    // Instance type
+  ami             = "ami-003c463c8207b4dfa"  // Update with your Ubuntu 20.04 AMI ID
+  instance_type   = "t2.medium"
   key_name        = "TASK2"  // Replace with your key pair name
 
-  subnet_id       = "subnet-07a588e36ae9c9143"  // Specify your subnet ID
-  vpc_security_group_ids = ["sg-0dd882da58c7d696b"]  // Replace with your security group ID
+  subnet_id       = "subnet-07a588e36ae9c9143"  // Update with your subnet ID
+  vpc_security_group_ids = ["sg-0dd882da58c7d696b"]  // Update with your security group ID
 
   tags = {
     Name = "srv-strapi"
@@ -17,9 +17,9 @@ resource "aws_instance" "strapi_instance" {
 
   connection {
     type        = "ssh"
-    user        = "ubuntu"  // Replace with your SSH user on the instance
-    private_key = file("/home/ubuntu")  // Replace with the correct path to your .pem file
-    host        = self.public_ip  // Use the instance's public IP address
+    user        = "ubuntu"
+    private_key = file("/home/ubuntu/TASK2.pem")  // Update with correct path to your .pem file
+    host        = self.public_ip
   }
 }
 
