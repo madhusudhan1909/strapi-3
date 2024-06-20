@@ -1,6 +1,9 @@
-provider "aws" {
+ provider "aws" {
   region = "ap-southeast-1"
+  profile = "default"  # Specify the profile name if using a named profile
+  # Or specify access_key and secret_key directly
 }
+
 
 # Define the EC2 instance
 resource "aws_instance" "strapi_instance" {
