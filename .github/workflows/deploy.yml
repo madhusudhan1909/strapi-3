@@ -1,46 +1,42 @@
-name: CI/CD for Strapi
+provider "aws" {
+  region = "ap-southeast-1"  // Specify your AWS region
+}
 
-on:
-  push:
-    branches:
-      - madhu  # Trigger on pushes to the main branch
+# Define the existing instance
+resource "aws_instance" "existing_instance" {
+  filter {
+    name   = "tag:Name"
+    values = ["srv-strapi"]  // Replace with your instance name tag
+  }
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"  // Replace with your SSH user on the instance
+    private_key = file("/path/to/your/private_key.pem")  // Replace with the path to your private key
+    host        = aws_instance.existing_instance.public_ip  // Use the instance's public IP address
+  }
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          ref: madhu  # Checkout the main branch
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update",
+      "sudo apt-get install -y nodejs npm",
+      "sudo npm install -g yarn pm2",
+      "git clone https://github.com/madhusudhan1909/strapi.git /srv/strapi",
+      "cd /srv/strapi && yarn install",
+      "cd /srv/strapi && pm2 start yarn --name strapi -- start",
+      "pm2 startup systemd",
+      "pm2 save"
+    ]
+  }
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.0.11
+  // Specify any other required configurations like instance type, tags, etc.
+  instance_type = "t2.micro"  // Replace with your instance type if different
 
-      - name: Terraform Init
-        run: terraform init
+  tags = {
+    Name = "srv-strapi"
+  }
+}
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          # Add any other environment variables needed for Terraform
-
-      - name: Extract Instance IP
-        id: output
-        run: echo "::set-output name=instance_ip::$(terraform output -raw instance_ip)"
-
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ steps.output.outputs.instance_ip }}
-          username: ubuntu  # Replace with your EC2 instance username
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /srv/strapi  # Change directory to your Strapi application directory
-            yarn install    # Install dependencies
-            pm2 restart strapi  # Restart Strapi using PM2 (adjust as per your setup)
+output "instance_ip" {
+  value = aws_instance.existing_instance.public_ip  // Output the public IP of the existing instance
+}
