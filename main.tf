@@ -28,7 +28,7 @@ resource "aws_instance" "strapi" {
     connection {
       type        = "ssh"
       user        = "ubuntu"   // Ubuntu user for SSH access
-      private_key = file("/home/ubuntu/TASK2.pem")  // Replace with the path to your TASK2.pem private key
+      private_key = file("/c/MADHU DRIVE/Desktop/New folder/Downloads/TASK2.pem")  // Replace with the path to your TASK2.pem private key
       host        = aws_instance.strapi.public_ip  // Uses the instance's public IP dynamically
     }
   }
