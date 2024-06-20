@@ -1,7 +1,7 @@
  provider "aws" {
   region = "ap-southeast-1"
-  profile = "default"  # Specify the profile name if using a named profile
-  # Or specify access_key and secret_key directly
+  access_key = var.AKIAXYKJQKV66YCZSSMU
+  secret_key = var.uiEFUHBwVnMMVE8lOQQSVG1mULR2We12jFwhV1mI
 }
 
 
