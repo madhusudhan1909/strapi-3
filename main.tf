@@ -20,8 +20,8 @@ resource "aws_instance" "strapi_instance" {
     user        = "ubuntu"
     private_key = file("/home/ubuntu/TASK2.pem")  // Update with correct path to your .pem file
     host        = "13.229.243.5"
+ }
 }
-
 output "instance_public_ip" {
   value = aws_instance.strapi_instance.public_ip
 }
