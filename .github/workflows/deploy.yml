@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: main  # Checkout the main branch
+          ref: madhu  # Checkout the main branch
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
