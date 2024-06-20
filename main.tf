@@ -19,7 +19,7 @@ resource "aws_instance" "strapi_instance" {
     type        = "ssh"
     user        = "ubuntu"
     private_key = file("/home/ubuntu/TASK2.pem")  // Update with correct path to your .pem file
-    host        = 13.212.240.236
+    host        = "13.212.240.236"  // Ensure this is the correct public IP address of your instance
   }
 }
 
