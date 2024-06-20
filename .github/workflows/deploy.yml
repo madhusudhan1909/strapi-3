@@ -1,54 +1,46 @@
-name: 'Strapi Deployment with Terraform'
+name: CI/CD for Strapi
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main  # Trigger on pushes to the main branch
 
 jobs:
-  terraform:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        ref: madhu  # Specify the branch to checkout
-
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1
-      with:
-        terraform_version: 1.0.11
-
-    - name: Terraform Init
-      run: terraform init
-
-    - name: Terraform Apply
-      id: apply
-      run: terraform apply -auto-approve
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-    - name: Extract Instance IP
-      id: output
-      run: echo "::set-output name=instance_ip::$(terraform output -raw instance_ip)"
-
   deploy:
-    needs: terraform
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        ref: madhu  # Specify the branch to checkout
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: main  # Checkout the main branch
 
-    - name: Deploy Strapi Application
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        INSTANCE_IP: ${{ needs.terraform.outputs.instance_ip }}
-      run: |
-        ssh -o StrictHostKeyChecking=no -i /path/to/your/TASK2.pem ubuntu@${{ env.INSTANCE_IP }} "rm -rf /srv/strapi/*"
-        scp -o StrictHostKeyChecking=no -i /path/to/your/TASK2.pem -r . ubuntu@${{ env.INSTANCE_IP }}:/srv/strapi
-        ssh -o StrictHostKeyChecking=no -i /path/to/your/TASK2.pem ubuntu@${{ env.INSTANCE_IP }} "cd /srv/strapi && yarn install && pm2 restart strapi"
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.11
 
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # Add any other environment variables needed for Terraform
+
+      - name: Extract Instance IP
+        id: output
+        run: echo "::set-output name=instance_ip::$(terraform output -raw instance_ip)"
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ steps.output.outputs.instance_ip }}
+          username: ubuntu  # Replace with your EC2 instance username
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /srv/strapi  # Change directory to your Strapi application directory
+            yarn install    # Install dependencies
+            pm2 restart strapi  # Restart Strapi using PM2 (adjust as per your setup)
