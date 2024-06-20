@@ -6,7 +6,7 @@
 # Define the EC2 instance
 resource "aws_instance" "strapi_instance" {
   ami             = "ami-003c463c8207b4dfa"  // Update with your Ubuntu 20.04 AMI ID
-  instance_type   = "t2.large"
+  instance_type   = "t2.medium"
   key_name        = "TASK2"  // Replace with your key pair name
 
   subnet_id       = "subnet-0ba5354c77b6d001f"  // Update with your subnet ID
@@ -20,7 +20,7 @@ resource "aws_instance" "strapi_instance" {
     type        = "ssh"
     user        = "ubuntu"
     private_key = file("/home/ubuntu/TASK2.pem")  // Update with correct path to your .pem file
-    host        = "13.212.240.236"  // Ensure this is the correct public IP address of your instance
+    host        = "13.229.243.5"  // Ensure this is the correct public IP address of your instance
   }
 }
 
