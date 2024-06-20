@@ -1,4 +1,4 @@
-name: Strapi Deployment
+name: 'Strapi Deployment'
 
 on:
   push:
@@ -7,19 +7,19 @@ on:
 
 jobs:
   deploy:
+    needs: terraform
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Install SSH key
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.PRIVATE_KEY }}
-
-      - name: Deploy Strapi Application
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.PRIVATE_KEY }} ubuntu@${{ secrets.EC2_PUBLIC_IP }} "sudo rm -rf /srv/strapi/*"
-          scp -o StrictHostKeyChecking=no -i ${{ secrets.PRIVATE_KEY }} -r * ubuntu@${{ secrets.EC2_PUBLIC_IP }}:/srv/strapi
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.PRIVATE_KEY }} ubuntu@${{ secrets.EC2_PUBLIC_IP }} "cd /srv/strapi && yarn install && pm2 restart strapi"
+    - name: Deploy Strapi Application
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        instance_ip=$(terraform output -raw instance_ip)
+        ssh -o StrictHostKeyChecking=no -i /home/ubuntu/TASK2.pem ubuntu@$instance_ip "rm -rf /srv/strapi/*"
+        scp -o StrictHostKeyChecking=no -i /home/ubuntu/TASK2.pem -r . ubuntu@$instance_ip:/srv/strapi
+        ssh -o StrictHostKeyChecking=no -i /home/ubuntu/TASK2.pem ubuntu@$instance_ip "cd /srv/strapi && yarn install && pm2 restart strapi"
