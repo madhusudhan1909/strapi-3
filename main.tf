@@ -2,41 +2,24 @@ provider "aws" {
   region = "ap-southeast-1"  // Specify your AWS region
 }
 
-# Define the existing instance
-resource "aws_instance" "existing_instance" {
-  filter {
-    name   = "tag:Name"
-    values = ["srv-strapi"]  // Replace with your instance name tag
-  }
+# Define the EC2 instance
+resource "aws_instance" "strapi_instance" {
+  ami             = "ami-003c463c8207b4dfa"  // Ubuntu 24.04 AMI ID
+  instance_type   = "t2.medium"    // Instance type
+  key_name        = "TASK2"  // Replace with your key pair name
 
-  connection {
-    type        = "ssh"
-    user        = "ubuntu"  // Replace with your SSH user on the instance
-    private_key = file("/path/to/your/private_key.pem")  // Replace with the path to your private key
-    host        = aws_instance.existing_instance.public_ip  // Use the instance's public IP address
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt-get update",
-      "sudo apt-get install -y nodejs npm",
-      "sudo npm install -g yarn pm2",
-      "git clone https://github.com/madhusudhan1909/strapi.git /srv/strapi",
-      "cd /srv/strapi && yarn install",
-      "cd /srv/strapi && pm2 start yarn --name strapi -- start",
-      "pm2 startup systemd",
-      "pm2 save"
-    ]
-  }
-
-  // Specify any other required configurations like instance type, tags, etc.
-  instance_type = "t2.micro"  // Replace with your instance type if different
+  subnet_id       = "subnet-07a588e36ae9c9143"  // Specify your subnet ID
+  vpc_security_group_ids = ["sg-0dd882da58c7d696b"]  // Replace with your security group ID
 
   tags = {
     Name = "srv-strapi"
   }
 }
 
-output "instance_ip" {
-  value = aws_instance.existing_instance.public_ip  // Output the public IP of the existing instance
+output "instance_public_ip" {
+  value = aws_instance.strapi_instance.public_ip
+}
+
+output "instance_private_ip" {
+  value = aws_instance.strapi_instance.private_ip
 }
