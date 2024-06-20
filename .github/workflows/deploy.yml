@@ -3,7 +3,7 @@ name: CI/CD for Strapi
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch
+      - madhu  # Trigger on pushes to the main branch
 
 jobs:
   deploy:
