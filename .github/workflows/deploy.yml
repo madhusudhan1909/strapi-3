@@ -64,6 +64,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}  # SSH username for the EC2 instance
           key: ${{ secrets.SSH_PRIVATE_KEY }}  # SSH private key for authentication
           script: |
+            npm install pm2 -g
             cd /home/ubuntu/strapi/examples/getstarted # Assuming Strapi is deployed under /srv/strapi on the EC2 instance
             pm2 start
              
