@@ -64,8 +64,9 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}  # SSH username for the EC2 instance
           key: ${{ secrets.SSH_PRIVATE_KEY }}  # SSH private key for authentication
           script: |
-            cd /srv/strapi  # Assuming Strapi is deployed under /srv/strapi on the EC2 instance
+            cd /home/ubuntu/strapi # Assuming Strapi is deployed under /srv/strapi on the EC2 instance
             git pull origin main  # Pull the latest code from your repository
             yarn install  # Install dependencies if needed
-            # pm2 restart strapi 
-            yarn develop
+            pm2 restart strapi 
+            # yarn develop
+             
