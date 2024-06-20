@@ -3,7 +3,7 @@ name: CI/CD for Strapi
 on:
   push:
     branches:
-      - madhu  # Trigger on pushes to main branch
+      - madhu  # Trigger on pushes to the main branch
 
 jobs:
   terraform:
@@ -17,6 +17,14 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.0.0  # Adjust to the version you are using
+
+      - name: Configure AWS credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
 
       - name: Initialize Terraform
         run: terraform init
@@ -61,5 +69,4 @@ jobs:
             git pull origin main  # Pull the latest code from your repository
             yarn install  # Install dependencies if needed
             pm2 restart strapi  # Restart Strapi using PM2 (assuming it's managed by PM2)
-
             # Optionally, you can add more commands here for your deployment process
