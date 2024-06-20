@@ -18,7 +18,7 @@ resource "aws_instance" "strapi_instance" {
   connection {
     type        = "ssh"
     user        = "ubuntu"  // Replace with your SSH user on the instance
-    private_key = file("/c/MADHU DRIVE/Desktop/New folder/Downloads/TASK2.pem")  // Replace with the correct path to your .pem file
+    private_key = file("/home/ubuntu")  // Replace with the correct path to your .pem file
     host        = self.public_ip  // Use the instance's public IP address
   }
 }
