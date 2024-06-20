@@ -20,7 +20,7 @@ resource "aws_instance" "strapi_instance" {
     type        = "ssh"
     user        = "ubuntu"
     private_key = file("/home/ubuntu/TASK2.pem")  // Update with correct path to your .pem file
-    host        = 13.229.243.5 
+    host        = "13.229.243.5"
   }
 }
 
