@@ -132,7 +132,7 @@ jobs:
       - name: Deploy to EC2 instance
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ env.INSTANCE_PUBLIC_IP }}  # Use the public IP obtained from Terraform
+          host: ${{ 13.212.240.236 }}  # Use the public IP obtained from Terraform
           username: ${{ secrets.EC2_USERNAME }}  # SSH username for the EC2 instance
           key: ${{ secrets.SSH_PRIVATE_KEY }}  # SSH private key for authentication
           script: |
