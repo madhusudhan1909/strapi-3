@@ -1,9 +1,79 @@
+# name: CI/CD for Strapi
+
+# on:
+#   push:
+#     branches:
+#       - madhu # Trigger on pushes to the main branch
+
+# jobs:
+#   terraform:
+#     runs-on: ubuntu-latest
+
+#     env:
+#       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#       AWS_REGION: ap-southeast-1  # Specify your AWS region here
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Set up Terraform
+#         uses: hashicorp/setup-terraform@v1
+#         with:
+#           terraform_version: 1.0.0  # Adjust to the version you are using
+#           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws_region: ap-southeast-1  
+
+#       - name: Initialize Terraform
+#         run: terraform init
+
+#       - name: Plan Terraform changes
+#         run: terraform plan
+
+#       - name: Apply Terraform changes
+#         id: apply
+#         run: terraform apply -auto-approve
+
+#       - name: Output Terraform Outputs
+#         run: |
+#           echo "Instance Public IP: ${{ steps.apply.outputs.instance_public_ip }}"
+#           echo "Instance Private IP: ${{ steps.apply.outputs.instance_private_ip }}"
+#         id: terraform_output
+#         env:
+#           INSTANCE_PUBLIC_IP: ${{ steps.apply.outputs.instance_public_ip }}
+#           INSTANCE_PRIVATE_IP: ${{ steps.apply.outputs.instance_private_ip }}
+
+#   deploy:
+#     runs-on: ubuntu-latest
+#     needs: terraform  # Ensure the Terraform job completes successfully before deployment
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Set up Node.js
+#         uses: actions/setup-node@v2
+#         with:
+#           node-version: '14'
+
+#       - name: Deploy to EC2 instance
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: 13.229.243.5 # Use the public IP obtained from Terraform
+#           username: ${{ secrets.EC2_USERNAME }}  # SSH username for the EC2 instance
+#           key: ${{ secrets.SSH_PRIVATE_KEY }}  # SSH private key for authentication
+#           script: |
+#             npm install pm2 -g
+#             cd /home/ubuntu/strapi/examples/getstarted # Assuming Strapi is deployed under /srv/strapi on the EC2 instance
+#             pm2 start
+             
 name: CI/CD for Strapi
 
 on:
   push:
     branches:
-      - madhu # Trigger on pushes to the main branch
+      - madhu # Trigger on pushes to the madhu branch
 
 jobs:
   terraform:
@@ -13,6 +83,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ap-southeast-1  # Specify your AWS region here
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -20,10 +91,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.0.0  # Adjust to the version you are using
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: ap-southeast-1  
+          terraform_version: 1.0.0
 
       - name: Initialize Terraform
         run: terraform init
@@ -36,13 +104,13 @@ jobs:
         run: terraform apply -auto-approve
 
       - name: Output Terraform Outputs
+        id: output
         run: |
-          echo "Instance Public IP: ${{ steps.apply.outputs.instance_public_ip }}"
-          echo "Instance Private IP: ${{ steps.apply.outputs.instance_private_ip }}"
-        id: terraform_output
+          echo "Instance Public IP: $(terraform output -raw instance_public_ip)"
+          echo "Instance Private IP: $(terraform output -raw instance_private_ip)"
         env:
-          INSTANCE_PUBLIC_IP: ${{ steps.apply.outputs.instance_public_ip }}
-          INSTANCE_PRIVATE_IP: ${{ steps.apply.outputs.instance_private_ip }}
+          INSTANCE_PUBLIC_IP: $(terraform output -raw instance_public_ip)
+          INSTANCE_PRIVATE_IP: $(terraform output -raw instance_private_ip)
 
   deploy:
     runs-on: ubuntu-latest
@@ -60,11 +128,14 @@ jobs:
       - name: Deploy to EC2 instance
         uses: appleboy/ssh-action@master
         with:
-          host: 13.229.243.5 # Use the public IP obtained from Terraform
+          host: ${{ steps.output.outputs.INSTANCE_PUBLIC_IP }}
           username: ${{ secrets.EC2_USERNAME }}  # SSH username for the EC2 instance
           key: ${{ secrets.SSH_PRIVATE_KEY }}  # SSH private key for authentication
           script: |
-            npm install pm2 -g
-            cd /home/ubuntu/strapi/examples/getstarted # Assuming Strapi is deployed under /srv/strapi on the EC2 instance
-            pm2 start
-             
+            sudo apt-get update -y
+            sudo apt-get install -y nodejs npm
+            sudo npm install -g pm2
+            cd /srv/strapi/examples/getstarted
+            git pull origin madhu
+            npm install
+            pm2 start npm -- start
