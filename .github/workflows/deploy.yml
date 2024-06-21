@@ -132,13 +132,14 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}  # SSH username for the EC2 instance
           key: ${{ secrets.SSH_PRIVATE_KEY }}  # SSH private key for authentication
           script: |
-            # sudo apt-get update -y
-            # sudo apt-get install -y nodejs npm
-            # sudo npm install -g pm2
-            # cd /strapi/examples/getstarted
-            # git pull origin madhu
-            # npm install
+            sudo apt-get update -y
+            sudo apt-get install -y nodejs npm
+            sudo npm install -g pm2
+            cd /home/ubuntu/strapi/examples/getstarted  # Adjust path based on your setup
+            git pull origin madhu
+            npm install
             pm2 start npm -- start
+            pm2 logs npm > pm2_logs.txt  # Output PM2 logs to a file
       -  name: Wait for deployment to complete
          run: sleep 30  # Adjust the sleep duration based on your application's startup time
 
