@@ -2,6 +2,12 @@ provider "aws" {
   region = "ap-southeast-1"
 }
 
+variable "private_key" {
+  description = "The private key for SSH access"
+  type        = string
+  sensitive   = true
+}
+
 resource "aws_instance" "strapi_instance" {
   ami                    = "ami-003c463c8207b4dfa"  # Update with your Ubuntu 20.04 AMI ID
   instance_type          = "t2.medium"
@@ -16,8 +22,8 @@ resource "aws_instance" "strapi_instance" {
   connection {
     type        = "ssh"
     user        = "ubuntu"
-    private_key = file("/home/ubuntu/TASK2.pem")  # Update with correct path to your .pem file
-    host        = aws_instance.strapi_instance.public_ip
+    private_key = var.private_key
+    host        = self.public_ip
   }
 
   provisioner "remote-exec" {
