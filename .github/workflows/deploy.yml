@@ -139,3 +139,13 @@ jobs:
             # git pull origin madhu
             # npm install
             pm2 start npm -- start
+      -  name: Wait for deployment to complete
+         run: sleep 30  # Adjust the sleep duration based on your application's startup time
+
+      - name: Check PM2 logs
+        run: pm2 logs npm
+
+      - name: Output application URL
+        run: |
+         PUBLIC_IP="${{ needs.terraform.outputs.INSTANCE_PUBLIC_IP }}"
+         echo "Strapi Application URL: http://${PUBLIC_IP}:1337"
