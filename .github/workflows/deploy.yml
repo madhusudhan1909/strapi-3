@@ -3,7 +3,7 @@ name: CI/CD for Strapi
 on:
   push:
     branches:
-      - madhu # Trigger on pushes to the main branch
+      - main # Trigger on pushes to the main branch
 
 jobs:
   terraform:
